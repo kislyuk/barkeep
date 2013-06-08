@@ -55,8 +55,8 @@ class Commit < Sequel::Model
   end
 
   def disapprove
-    self.approved_at = nil
-    self.approved_by_user_id = nil
+    #self.approved_at = nil
+    #self.approved_by_user_id = nil
     save
   end
 
