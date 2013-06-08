@@ -1,6 +1,8 @@
 require "lib/meta_repo"
 require "lib/string_filter"
 
+require "octokit"
+
 # Columns:
 # - approved_at: when the commit was approved.
 # - approved_by_user_id: the most recent user to approve the commit.
@@ -44,6 +46,12 @@ class Commit < Sequel::Model
     self.approved_at = Time.now
     self.approved_by_user_id = user.id
     save
+
+    repo = GitRepo[git_repo_id]
+    username = User[user.id].name
+    client = Octokit::Client.new(:login => GITHUB_LOGIN, :oauth_token => GITHUB_TOKEN)
+    client.create_commit_comment({:username => "dnanexus", :repo => repo.name},
+                                 sha, "Approved by #{username} in barkeep")
   end
 
   def disapprove

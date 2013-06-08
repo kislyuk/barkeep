@@ -5,6 +5,9 @@
 # - file_version
 
 require "lib/string_filter"
+require "models/commit"
+
+require "octokit"
 
 class Comment < Sequel::Model
   include StringFilter
@@ -31,4 +34,22 @@ class Comment < Sequel::Model
 
   # True if this comment pertains to a particular file.
   def file_comment?() !commit_file_id.nil? end
+
+  def after_create
+    commit = Commit[self.commit_id]
+    repo = GitRepo[commit.git_repo_id]
+
+    client = Octokit::Client.new(:login => GITHUB_LOGIN, :oauth_token => GITHUB_TOKEN)
+
+    relay_footer = "\n\n***\n\nComment relayed from Barkeep"
+
+    if general_comment?
+      client.create_commit_comment({:username => "dnanexus", :repo => repo.name},
+                                   commit.sha, self.text + relay_footer)
+    else
+      commit_file = CommitFile[commit_file_id]
+      client.create_commit_comment({:username => "dnanexus", :repo => repo.name},
+                                   commit.sha, self.text + relay_footer, commit_file.filename, line_number, 1)
+    end
+  end
 end

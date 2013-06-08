@@ -87,3 +87,5 @@ group :development do
   gem "awesome_print"
   gem "statusz" # For the deploy information status page
 end
+
+gem "octokit"

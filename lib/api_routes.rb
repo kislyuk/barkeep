@@ -3,6 +3,8 @@ require "time"
 
 require "lib/api"
 
+require 'octokit'
+
 class BarkeepServer < Sinatra::Base
   include Api
 
@@ -43,6 +45,9 @@ class BarkeepServer < Sinatra::Base
     ensure_required_params :repo_name, :sha, :text
     begin
       create_comment(*[:repo_name, :sha, :filename, :line_number, :text].map { |f| params[f] })
+      client = Octokit::Client.new(:login => GITHUB_LOGIN, :oauth_token => GITHUB_TOKEN)
+      client.create_commit_comment({:username => "dnanexus", :repo => params["repo"]},
+                                   params["sha"], params["text"], params["filename"], params["line_number"], 1)
     rescue RuntimeError => e
       api_error 400, e.message
     end
