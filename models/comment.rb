@@ -36,20 +36,22 @@ class Comment < Sequel::Model
   def file_comment?() !commit_file_id.nil? end
 
   def after_create
-    commit = Commit[self.commit_id]
+    commit = Commit[commit_id]
     repo = GitRepo[commit.git_repo_id]
+    username = User[user_id].name
 
     client = Octokit::Client.new(:login => GITHUB_LOGIN, :oauth_token => GITHUB_TOKEN)
 
-    relay_footer = "\n\n***\n\nComment relayed from Barkeep"
+    relay_header = "**#{username}** said in Barkeep: "
+    relay_footer = ""
 
     if general_comment?
       client.create_commit_comment({:username => "dnanexus", :repo => repo.name},
-                                   commit.sha, self.text + relay_footer)
+                                   commit.sha, relay_header + text + relay_footer)
     else
       commit_file = CommitFile[commit_file_id]
       client.create_commit_comment({:username => "dnanexus", :repo => repo.name},
-                                   commit.sha, self.text + relay_footer, commit_file.filename, line_number, 1)
+                                   commit.sha, relay_header + text + relay_footer, commit_file.filename, line_number, 1)
     end
   end
 end
