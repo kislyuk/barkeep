@@ -38,7 +38,7 @@ class Comment < Sequel::Model
   def after_create
     commit = Commit[commit_id]
     repo = GitRepo[commit.git_repo_id]
-    username = User[user_id].name
+    username = User[user.id].name.chomp('@'+DEFAULT_COMMITTERS_DOMAIN)
 
     client = Octokit::Client.new(:login => GITHUB_LOGIN, :oauth_token => GITHUB_TOKEN)
 
