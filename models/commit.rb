@@ -51,7 +51,7 @@ class Commit < Sequel::Model
     username = User[user.id].name
     client = Octokit::Client.new(:login => GITHUB_LOGIN, :oauth_token => GITHUB_TOKEN)
     client.create_commit_comment({:username => "dnanexus", :repo => repo.name},
-                                 sha, ":white_check_mark: #{username} approved this commit in Barkeep")
+                                 sha, ":white_check_mark: **#{username}** approved this commit in Barkeep")
   end
 
   def disapprove
